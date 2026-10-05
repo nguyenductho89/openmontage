@@ -121,17 +121,53 @@ def _load_checkpoint_schema() -> dict[str, Any]:
         return json.load(f)
 
 
+def _required_artifact_for_stage(stage: str, pipeline_type: str | None) -> str | None:
+    """Resolve the artifact a completed/awaiting_human checkpoint must carry.
+
+    Stages beyond the 9 canonical ones (character-animation's
+    `character_design`/`rig_plan`, screen-demo's `real_capture`, true-crime's
+    `fact_check`, ...) have no entry in `CANONICAL_STAGE_ARTIFACTS` and are
+    deliberately left unenforced here — see
+    tests/lib/test_checkpoint_noncanonical_stage.py. Their artifacts are
+    still schema-validated below when present; this function only decides
+    whether a checkpoint can be rejected for omitting one.
+
+    For a *canonical* stage name, a pipeline can still repurpose it for a
+    different primary artifact — true-crime's `research` stage produces
+    `case_research_pack`, not `research_brief`. When a manifest is
+    available, prefer its stage's declared `produces[0]` (the primary
+    artifact every shipped manifest lists first; secondary artifacts like
+    `decision_log`/`final_review` are supplementary) over the global table.
+    Falls back to the global table when pipeline_type is absent, the
+    manifest can't be loaded, or the stage isn't found in it.
+    """
+    if stage not in CANONICAL_STAGE_ARTIFACTS:
+        return None
+
+    if pipeline_type:
+        try:
+            from lib.pipeline_loader import load_pipeline_readonly
+
+            manifest = load_pipeline_readonly(pipeline_type)
+            for stage_def in manifest.get("stages", []):
+                if stage_def.get("name") == stage:
+                    produces = stage_def.get("produces") or []
+                    if produces:
+                        return produces[0]
+                    break
+        except Exception:
+            pass  # fall through to the canonical table below
+
+    return CANONICAL_STAGE_ARTIFACTS[stage]
+
+
 def _validate_artifacts_for_stage(
     stage: str,
     status: str,
     artifacts: dict[str, Any],
+    pipeline_type: str | None = None,
 ) -> None:
-    # Valid stages come from the pipeline manifest (get_pipeline_stages), which
-    # can declare stages beyond the 9 canonical ones (e.g. character-animation's
-    # `character_design`/`rig_plan`, screen-demo's `real_capture`). Those have no
-    # canonical artifact, so look it up defensively — a missing entry means the
-    # stage simply has no required artifact, not a crash.
-    required_artifact = CANONICAL_STAGE_ARTIFACTS.get(stage)
+    required_artifact = _required_artifact_for_stage(stage, pipeline_type)
     if (
         required_artifact is not None
         and status in {"completed", "awaiting_human"}
@@ -183,7 +219,7 @@ def validate_checkpoint(checkpoint: dict[str, Any]) -> None:
     if not isinstance(artifacts, dict):
         raise CheckpointValidationError("Checkpoint artifacts must be a dictionary")
 
-    _validate_artifacts_for_stage(stage, status, artifacts)
+    _validate_artifacts_for_stage(stage, status, artifacts, pipeline_type)
 
     try:
         jsonschema.validate(instance=checkpoint, schema=_load_checkpoint_schema())

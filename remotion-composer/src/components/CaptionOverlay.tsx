@@ -110,22 +110,33 @@ const PageRenderer: React.FC<{
             const isActive = w.startMs <= currentMs && w.endMs > currentMs;
             const isPast = w.endMs <= currentMs;
             return (
-              <span
-                key={`${w.startMs}-${i}`}
-                style={{
-                  // Keep each word unbroken so lines wrap only at word
-                  // boundaries. For space-delimited text this matches the
-                  // previous behavior; for CJK it prevents mid-word breaks.
-                  display: "inline-block",
-                  whiteSpace: "nowrap",
-                  color: isActive ? highlightColor : isPast ? color : `${color}99`,
-                  transition: "none", // CSS transitions forbidden in Remotion
-                  textShadow: isActive
-                    ? `0 0 20px ${highlightColor}66, 0 2px 4px rgba(0,0,0,0.5)`
-                    : "0 2px 4px rgba(0,0,0,0.5)",
-                }}
-              >
-                {w.word}{i < page.words.length - 1 ? wordSeparator : ""}
+              // Outer span (default display: inline) + separator text, not
+              // a single inline-block span: a browser trims collapsible
+              // whitespace at the edge of an inline-block box, so a
+              // trailing " " placed inside the same inline-block as the
+              // word (the previous implementation) was silently dropped,
+              // and words rendered glued together
+              // ("Arizona.Shewasthemother"). Keeping the separator as a
+              // sibling text node outside the inline-block is ordinary
+              // inline-flow whitespace, which is not collapsed.
+              <span key={`${w.startMs}-${i}`}>
+                <span
+                  style={{
+                    // Keep each word unbroken so lines wrap only at word
+                    // boundaries. For space-delimited text this matches the
+                    // previous behavior; for CJK it prevents mid-word breaks.
+                    display: "inline-block",
+                    whiteSpace: "nowrap",
+                    color: isActive ? highlightColor : isPast ? color : `${color}99`,
+                    transition: "none", // CSS transitions forbidden in Remotion
+                    textShadow: isActive
+                      ? `0 0 20px ${highlightColor}66, 0 2px 4px rgba(0,0,0,0.5)`
+                      : "0 2px 4px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  {w.word}
+                </span>
+                {i < page.words.length - 1 ? wordSeparator : ""}
               </span>
             );
           })}

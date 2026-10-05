@@ -216,6 +216,7 @@ stages:
 | `podcast-repurpose` | hybrid | Podcast highlights to video |
 | `screen-demo` | screen_recording | Software screen recordings and walkthroughs |
 | `talking-head` | talking_head | Footage-led speaker videos |
+| `true-crime` | documentary | Long-form narrated true-crime documentary with a binding research/script/legal-check gate and archival-first visual sourcing |
 | `framework-smoke` | custom | Minimal smoke test for framework validation |
 
 ### Standard Stage Progression
@@ -236,7 +237,10 @@ Each stage:
 Specialized pipelines may insert domain-specific stages. For example,
 `character-animation` adds `character_design` and `rig_plan` before
 `scene_plan`, then emits a HyperFrames workspace and final deliverable at
-`projects/<project-name>/renders/final.mp4`.
+`projects/<project-name>/renders/final.mp4`. `true-crime` inserts a `fact_check`
+stage between `script` and `scene_plan` that produces a `legal_review` artifact;
+unlike most gates, this one is binding — the pipeline cannot proceed past a
+`NOT READY` verdict without an explicit, logged user decision.
 
 ---
 

@@ -1,0 +1,133 @@
+asset_generation:
+  consistency_anchors:
+  - Desaturated, archival-grain treatment across every generated still
+  - No identifiable real faces in any AI-generated or illustrative image
+  - Document/evidence cards use a typewriter-style monospace treatment
+  - Minimal, restrained motion — nothing celebratory or upbeat
+  diagram_style: thin-line case-file diagram, ivory on charcoal, single amber highlight,
+    typewriter labels, generous margins
+  image_negative_prompt: identifiable real face, gore, graphic wound detail, bright
+    saturated colors, glossy corporate template, decorative gradient, neon, cheerful
+    lighting, celebratory composition
+  image_prompt_prefix: 'muted documentary reconstruction, desaturated archival grain,
+    restrained low-key lighting, no identifiable faces, '
+audio:
+  ducking_threshold_db: -6
+  music_mood: low tension bed, sparse percussion, restrained dread, no triumphant swells
+  music_volume: 0.06
+  sfx_style: minimal — paper rustle, a single clock tick, distant ambient hum; never
+    jump-scare stingers
+  voice_style: measured, neutral, documentary narrator, non-sensational, no excitement
+    on violent content
+chart_palette:
+- '#C08A3E'
+- '#4C6B8A'
+- '#F2EFE6'
+- '#6B7280'
+color_rules:
+  colorblind_safe: true
+  contrast_validation: true
+  harmony_type: analogous
+identity:
+  best_for: True-crime documentaries, investigative explainers, case retrospectives,
+    cold-case retellings
+  category: cinematic
+  mood: serious, restrained, investigative, non-sensational
+  name: case-file
+  pace: deliberate
+motion:
+  animation_style: restrained ease-out, precise reveal, no bounce, no celebratory energy
+  entrance: fade-up 10px with slow opacity ramp
+  exit: soft fade, no whip or slide
+  pacing_rules:
+    max_scene_hold_seconds: 14
+    min_scene_hold_seconds: 3.0
+    stat_card_hold_seconds: 4.0
+    text_card_hold_seconds: 4.5
+    transition_duration_seconds: 0.5
+  transitions:
+  - fade
+  - dissolve
+  - cut
+quality_rules:
+- Minimum contrast ratio 4.5:1 for all text, including label overlays
+- Never generate or display an identifiable real face for a living suspect, defendant,
+  or minor
+- Every AI-generated or illustrative scene must carry its label overlay, never silently
+  dropped for pacing
+- No upbeat or triumphant music under tragic or unresolved content
+- Avoid gore and graphic wound detail beyond what understanding requires
+- No more than 2 accent colors on screen at once
+taste_profile:
+  anti_patterns:
+  - neon true-crime clickbait thumbnail treatment
+  - gratuitous gore or crime-scene detail
+  - upbeat or triumphant music cues
+  - AI-generated imagery presented without its required label
+  - sensational on-screen text ("SHOCKING", "YOU WON'T BELIEVE")
+  design_read: 'Case-file documentary: restrained authority, archival weight, zero
+    sensationalism.'
+  information_density: 4
+  layout_variation: Alternate full-bleed archival stills, centered evidence/document
+    cards, and timeline/map diagrams.
+  motion_intensity: 2
+  palette_discipline: Charcoal field, ivory text, muted amber for evidence/labels,
+    muted cobalt for secondary structure — no decorative gradients.
+  quality_gates:
+  - Every label overlay must be legible against its footage, verified by frame extraction.
+  - Motion should never read as exciting — this is a document, not a trailer.
+  reference_strategy: Confirm one archival still and one document-card still before
+    batch sourcing/generation.
+  visual_variance: 3
+typography:
+  body:
+    font: Inter
+    line_height: 1.6
+    weight: 400
+  code:
+    font: IBM Plex Mono
+    weight: 400
+  headings:
+    font: IBM Plex Serif
+    tracking: 0em
+    weight: 600
+  scale_system: major_third
+  stat_card:
+    font: IBM Plex Mono
+    size_multiplier: 2.6
+    weight: 700
+  weight_matrix:
+    body: 400
+    caption: 500
+    heading: 600
+    title: 700
+overlays:
+  code_block:
+    bg: '#14161C'
+    highlight: '#C08A3E'
+    text: '#F2EFE6'
+  key_term:
+    bg: '#20232C'
+    radius: 2
+    text: '#F2EFE6'
+  section_title:
+    bg: '#C08A3E'
+    radius: 2
+    text: '#14161C'
+  stat_card:
+    bg: '#1A1D24'
+    border: '#3A3E48'
+    radius: 4
+    shadow: 0 1px 8px rgba(0,0,0,0.35)
+visual_language:
+  color_palette:
+    accent:
+    - '#C08A3E'
+    background: '#14161C'
+    muted: '#6B7280'
+    primary:
+    - '#14161C'
+    text: '#F2EFE6'
+  composition: centered evidence framing with wide archival establishing shots, hard
+    alignment, one focal document or image per frame
+  texture: desaturated archival grain, fine divider lines, flat matte document cards

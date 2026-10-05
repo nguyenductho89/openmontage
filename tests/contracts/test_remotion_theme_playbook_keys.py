@@ -32,7 +32,14 @@ PLAYBOOK_NAMES = sorted(list_playbooks())
 
 
 def _raw(name: str) -> dict:
-    return yaml.safe_load((STYLES_DIR / f"{name}.yaml").read_text(encoding="utf-8"))
+    # Presets live directly in styles/; generated/custom playbooks (e.g.
+    # case-file) live in styles/custom/ — mirror playbook_loader.load_playbook's
+    # own fallback so this helper covers both, matching PLAYBOOK_NAMES above
+    # (which already comes from list_playbooks() and includes custom/).
+    path = STYLES_DIR / f"{name}.yaml"
+    if not path.exists():
+        path = STYLES_DIR / "custom" / f"{name}.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
 def _theme(name: str) -> dict:
