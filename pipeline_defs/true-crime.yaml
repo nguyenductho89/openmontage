@@ -1,0 +1,279 @@
+name: true-crime
+version: "1.0"
+description: >
+  Long-form (10-15 min) narrated true-crime documentary pipeline. Research, script, and a
+  binding legal/fact-check gate happen before any asset generation. Visuals are archival-first:
+  licensed stock and archive footage (Wikimedia, Archive.org, Library of Congress, NARA) over
+  AI illustration, and every AI-generated or illustrative visual is labeled on screen. The
+  fact-check stage distinguishes verified facts from allegations and court findings throughout,
+  and blocks production on a NOT READY verdict.
+category: documentary
+stability: beta
+
+default_checkpoint_policy: guided
+
+# Reference video input support
+reference_input:
+  supported: false
+
+orchestration:
+  mode: executive-producer
+  skill: pipelines/true-crime/executive-producer
+  budget_default_usd: 3.00
+  max_revisions_per_stage: 3
+  max_send_backs: 3
+  max_wall_time_minutes: 30
+
+extensions:
+  custom_scripts: true
+  custom_playbooks: true
+  custom_skills: true
+  custom_tools: false
+
+required_skills:
+  - pipelines/true-crime/executive-producer
+  - pipelines/true-crime/research-director
+  - pipelines/true-crime/proposal-director
+  - pipelines/true-crime/script-director
+  - pipelines/true-crime/fact-check-director
+  - pipelines/true-crime/scene-director
+  - pipelines/true-crime/asset-director
+  - pipelines/true-crime/edit-director
+  - pipelines/true-crime/compose-director
+  - pipelines/true-crime/publish-director
+  - meta/reviewer
+  - meta/checkpoint-protocol
+  - meta/voice-performance-director
+
+compatible_playbooks:
+  recommended:
+    - case-file
+  custom_allowed: true
+
+stages:
+  # ── Pre-Production ──────────────────────────────────────────────
+
+  - name: research
+    skill: pipelines/true-crime/research-director
+    produces:
+      - case_research_pack
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Case identity is unambiguous — any name collision with another case is explicitly resolved
+      - Timeline entries are each labeled VERIFIED / ALLEGED / DISPUTED / UNCONFIRMED
+      - Legal status of every named suspect/defendant matches the sources, not a stronger claim
+      - At least one tier A or B source per key fact; syndicated copies of one story count as one source
+      - Contradictions between sources are recorded, not silently resolved
+    success_criteria:
+      - Schema-valid case_research_pack artifact
+      - At least 3 sources cited, at least 1 tier A or B
+      - timeline has at least 1 entry and every entry has source_ids
+      - case_identity.legal_status is set
+
+  - name: proposal
+    skill: pipelines/true-crime/proposal-director
+    required_artifacts_in:
+      - case_research_pack
+    produces:
+      - proposal_packet
+      - decision_log
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Concept options use the same verified facts but differ in structure or angle
+      - "Visual sourcing policy is explicit: archival/licensed stock first, AI illustration labeled and last resort"
+      - render_runtime decision presents both Remotion and HyperFrames per the governance contract
+      - Cost estimate is itemized and honest
+      - Music plan is present (silent only with explicit user opt-out)
+    success_criteria:
+      - Schema-valid proposal_packet with at least 2 concept_options
+      - selected_concept references a valid concept_id
+      - approval.status is "approved" or "approved_with_changes" before proceeding
+      - A render_runtime_selection decision is logged in decision_log
+
+  - name: script
+    skill: pipelines/true-crime/script-director
+    required_artifacts_in:
+      - proposal_packet
+      - case_research_pack
+    produces:
+      - script
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Every section's narration maps to a case_research_pack timeline/evidence entry via source_ref
+      - Allegation/fact/court-finding distinctions are preserved in wording (no "the killer" / "the murderer" before conviction)
+      - Nine-part 10-15 minute structure present (cold open through closing reflection)
+      - Enhancement cues specify provenance-appropriate visuals (archival photo, map, court document, news headline)
+      - Word count within the duration budget for the target runtime
+    success_criteria:
+      - Schema-valid script with enhancement_cues per section
+      - Total duration between 600 and 900 seconds (10-15 minutes)
+      - No section lacks a source_ref for its central claim
+
+  - name: fact_check
+    skill: pipelines/true-crime/fact-check-director
+    required_artifacts_in:
+      - script
+      - case_research_pack
+    produces:
+      - legal_review
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Every script claim is labeled FACT / ALLEGATION / COURT_FINDING / INFERENCE with a risk tier
+      - Defamation-shaped sentences ("X did/is/was...") are flagged when not court-confirmed
+      - Privacy risks (addresses, minors, private contact info, unnecessary family detail) are flagged
+      - Graphic content is flagged and minimized where it doesn't serve understanding
+      - Jurisdiction-appropriate checklist applied (VN / US / other)
+    success_criteria:
+      - Schema-valid legal_review artifact
+      - Every script section has at least one corresponding claim entry
+      - final_script_status is READY, or the pipeline is explicitly blocked and sent back to script
+
+  # ── Production ──────────────────────────────────────────────────
+
+  - name: scene_plan
+    skill: pipelines/true-crime/scene-director
+    required_artifacts_in:
+      - script
+    optional_artifacts_in:
+      - legal_review
+      - proposal_packet
+    produces:
+      - scene_plan
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Full script duration covered with no gaps
+      - Visual sourcing order followed — archival/stock before AI illustration
+      - No scene plans an AI-generated image/video without a required on-screen label
+      - No scene plans gore, identifiable minors, or unlicensed victim/family social photos
+      - "Visual variety: no 3+ consecutive scenes of same type"
+    success_criteria:
+      - Schema-valid scene_plan with required_assets per scene
+      - At least 3 different scene types used
+
+  - name: assets
+    skill: pipelines/true-crime/asset-director
+    required_artifacts_in:
+      - scene_plan
+      - script
+    optional_artifacts_in:
+      - legal_review
+      - proposal_packet
+    produces:
+      - asset_manifest
+    required_tools:
+      - tts_selector
+    optional_tools:
+      - direct_clip_search
+      - corpus_builder
+      - clip_search
+      - image_selector
+      - video_selector
+      - diagram_gen
+      - music_gen
+    tools_available:
+      - tts_selector
+      - direct_clip_search
+      - corpus_builder
+      - clip_search
+      - image_selector
+      - video_selector
+      - diagram_gen
+      - music_gen
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Every archival/stock asset carries provider, original_url, and license
+      - Every AI-generated or AI-illustrative asset is tagged (subtype archival_real / illustrative / ai_generated / license_unknown)
+      - No asset has subtype license_unknown without an explicit flag for scene-director follow-up
+      - Narration applies the approved voice performance plan
+      - Total cost within approved budget
+    success_criteria:
+      - Schema-valid asset_manifest with all required assets generated
+      - All file paths resolve to existing files
+      - No asset is subtype license_unknown left unresolved
+
+  - name: edit
+    skill: pipelines/true-crime/edit-director
+    required_artifacts_in:
+      - scene_plan
+      - asset_manifest
+    optional_artifacts_in:
+      - script
+      - legal_review
+    produces:
+      - edit_decisions
+    tools_available: []
+    checkpoint_required: false
+    human_approval_default: false
+    review_focus:
+      - renderer_family and render_runtime are preserved unchanged from the proposal's lock
+      - Every illustrative or AI-generated cut carries a labeling overlay
+      - Every archival cut carries a source-credit overlay where required by license
+      - Opening disclaimer card present; subtitles enabled; chapter markers match the 9-part structure
+      - Music configured with ducking parameters
+    success_criteria:
+      - Schema-valid edit_decisions
+      - Full video duration covered with no gaps or overlaps
+
+  - name: compose
+    skill: pipelines/true-crime/compose-director
+    required_artifacts_in:
+      - edit_decisions
+      - asset_manifest
+    optional_artifacts_in:
+      - scene_plan
+    produces:
+      - render_report
+      - final_review
+    required_tools:
+      - video_compose
+      - audio_mixer
+    optional_tools:
+      - video_stitch
+    tools_available:
+      - video_compose
+      - hyperframes_compose
+      - video_stitch
+      - audio_mixer
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Output video exists and is playable
+      - "Duration within +/-5% of target"
+      - Every illustration/AI-generated label overlay is actually visible on the rendered frame, not just planned
+      - "render_runtime in edit_decisions matches proposal_packet — silent swap to another runtime is a CRITICAL governance violation"
+    success_criteria:
+      - Schema-valid render_report with output paths
+      - Output file exists and passes ffprobe validation
+
+  - name: publish
+    skill: pipelines/true-crime/publish-director
+    required_artifacts_in:
+      - render_report
+      - final_review
+    optional_artifacts_in:
+      - proposal_packet
+      - legal_review
+      - case_research_pack
+    produces:
+      - publish_log
+    tools_available: [export_bundle]
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Description and pinned comment distinguish allegation from verdict and cite sources
+      - A non-legal-advice disclaimer is included
+      - Export package structured correctly
+    success_criteria:
+      - Schema-valid publish_log
+      - Export directory contains video, metadata, and thumbnail concept

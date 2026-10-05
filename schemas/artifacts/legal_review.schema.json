@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openmontage/artifacts/legal_review",
+  "title": "Legal Review",
+  "description": "Output of the True Crime Fact-Check & Legal Director — a claim-by-claim audit of a script for factual accuracy, defamation/reputation risk, privacy, and graphic-content concerns. This is a content-risk assessment, not legal advice.",
+  "type": "object",
+  "required": ["version", "jurisdiction", "factual_readiness", "legal_risk", "source_quality", "claims", "final_script_status", "disclaimer"],
+  "properties": {
+    "version": { "type": "string", "const": "1.0" },
+    "jurisdiction": { "type": "string", "description": "Jurisdiction this checklist was applied against (e.g. 'US-CA', 'VN', 'other')" },
+    "legal_status_confirmed": {
+      "type": "string",
+      "enum": ["suspect", "charged", "on_trial", "convicted", "acquitted", "appeal_pending", "unsolved", "other"]
+    },
+    "factual_readiness": { "type": "string", "enum": ["READY", "NEEDS REVISION", "NOT READY"] },
+    "legal_risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+    "source_quality": { "type": "string", "enum": ["STRONG", "MIXED", "WEAK"] },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section_id", "text", "label", "risk"],
+        "properties": {
+          "section_id": { "type": "string", "description": "script.sections[].id this claim belongs to" },
+          "text": { "type": "string", "description": "The claim or sentence being audited" },
+          "label": {
+            "type": "string",
+            "enum": ["FACT", "ALLEGATION", "COURT_FINDING", "INFERENCE"],
+            "description": "FACT=source-confirmed event. ALLEGATION=police/prosecution/party claim. COURT_FINDING=what a court actually concluded. INFERENCE=analysis/speculation, must be flagged as such."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ok", "MISSING_SOURCE", "CONFLICT"],
+            "default": "ok"
+          },
+          "source_ids": { "type": "array", "items": { "type": "string" } },
+          "risk": {
+            "type": "string",
+            "enum": ["GREEN", "YELLOW", "ORANGE", "RED"],
+            "description": "GREEN=sourced, correct wording. YELLOW=needs attribution/wording fix. ORANGE=weak source or privacy concern. RED=high risk: unsupported assertion of guilt, defamation exposure, or sensitive data disclosure."
+          },
+          "recommended_action": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required_corrections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section_id", "current_text", "proposed_text", "reason"],
+        "properties": {
+          "section_id": { "type": "string" },
+          "current_text": { "type": "string" },
+          "proposed_text": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_gaps": { "type": "array", "items": { "type": "string" } },
+    "privacy_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "recommendation"],
+        "properties": {
+          "description": { "type": "string" },
+          "recommendation": { "type": "string", "description": "remove, redact, or shorten" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "graphic_content_flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section_id", "description"],
+        "properties": {
+          "section_id": { "type": "string" },
+          "description": { "type": "string" },
+          "recommendation": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "image_broll_flags": {
+      "type": "array",
+      "description": "Visual provenance concerns — mirrors the [ARCHIVAL REAL]/[ILLUSTRATIVE]/[AI-GENERATED]/[LICENSE UNKNOWN] checklist.",
+      "items": {
+        "type": "object",
+        "required": ["description", "provenance_class"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "description": { "type": "string" },
+          "provenance_class": {
+            "type": "string",
+            "enum": ["ARCHIVAL_REAL", "ILLUSTRATIVE", "AI_GENERATED", "LICENSE_UNKNOWN"]
+          },
+          "recommendation": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "final_script_status": { "type": "string", "enum": ["READY", "NEEDS REVISION", "NOT READY"] },
+    "disclaimer": {
+      "type": "string",
+      "const": "This review assesses factual and reputational content risk. It is not legal advice. Consult a licensed attorney in the relevant jurisdiction for legal certainty."
+    },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": false
+}

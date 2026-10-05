@@ -280,6 +280,21 @@ Stage director skills teach the agent HOW to execute each pipeline stage. Each s
 | Compose Director | `pipelines/localization-dub/compose-director.md` | `compose` | Per-locale rendering, subtitle-fit checks, output labeling |
 | Publish Director | `pipelines/localization-dub/publish-director.md` | `publish` | Locale packaging, metadata precision, QA-note retention |
 
+### True Crime Pipeline (`pipelines/true-crime/`) — v1.0
+
+| Skill | File | Stage | Key Capabilities |
+|-------|------|-------|-----------------|
+| **Executive Producer** | `pipelines/true-crime/executive-producer.md` | `all` | **9-stage serial orchestration; binding fact-check gate enforcement** |
+| Research Director | `pipelines/true-crime/research-director.md` | `research` | Case identity disambiguation, source tiering, FACT/ALLEGATION/DISPUTED timeline labeling |
+| Proposal Director | `pipelines/true-crime/proposal-director.md` | `proposal` | Concept options on the same verified facts, archival-first visual sourcing policy, render-runtime selection |
+| Script Director | `pipelines/true-crime/script-director.md` | `script` | 9-part 10-15 minute narration structure, legal-precision wording, `source_ref` traceability |
+| **Fact-Check & Legal Director** | `pipelines/true-crime/fact-check-director.md` | `fact_check` | **Claim-by-claim audit, defamation/privacy/graphic-content checks, jurisdiction checklists, binding READY/NEEDS REVISION/NOT READY gate** |
+| Scene Director | `pipelines/true-crime/scene-director.md` | `scene_plan` | Provenance classification (archival/illustrative/AI-generated/license-unknown), mandatory label planning |
+| Asset Director | `pipelines/true-crime/asset-director.md` | `assets` | Archival/licensed-stock sourcing, provenance tagging, reconstruction-only AI imagery |
+| Edit Director | `pipelines/true-crime/edit-director.md` | `edit` | Mandatory provenance-label overlays, source-credit overlays, chapter markers |
+| Compose Director | `pipelines/true-crime/compose-director.md` | `compose` | Render + frame-extraction verification that every label overlay is actually visible |
+| Publish Director | `pipelines/true-crime/publish-director.md` | `publish` | Sources list, allegation-vs-verdict pinned comment, non-legal-advice disclaimer |
+
 ## Meta Skills
 
 Cross-cutting skills that apply to all pipelines:
@@ -304,8 +319,11 @@ Style playbooks (`styles/*.yaml`) define visual language, typography, motion, au
 | `premium-minimalist` | minimalist | calm, editorial | Investor updates, expert explainers, product narratives |
 | `flat-motion-graphics` | motion-graphics | energetic, bold | Social media, TikTok, startups |
 | `minimalist-diagram` | whiteboard | focused, technical | Technical deep-dives, architecture |
+| `case-file` (custom) | cinematic | serious, restrained, investigative | True-crime documentaries, investigative explainers, case retrospectives |
 
-Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`
+Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`. Custom
+playbooks (generated, or hand-authored like `case-file`) live in `styles/custom/`
+and are resolved by the same loader — see `styles/playbook_loader.py::load_playbook`.
 
 ## Installed Agent Skills (Layer 3)
 

@@ -23,6 +23,106 @@
             "enum": ["primary", "overlay", "background"],
             "default": "primary"
           },
+          "type": {
+            "type": "string",
+            "description": "Remotion `cut.type` — see remotion-composer/SCENE_TYPES.md. Omit for a plain video/image cut (OffthreadVideo/Img).",
+            "enum": [
+              "text_card", "hero_title", "stat_card", "callout", "comparison",
+              "bar_chart", "line_chart", "pie_chart", "kpi_grid", "progress_bar",
+              "anime_scene", "terminal_scene", "screenshot_scene"
+            ]
+          },
+          "animation": {
+            "type": "string",
+            "description": "Top-level animation hint read directly by video_compose._needs_remotion (e.g. ken-burns-slow-zoom, zoom-in, pan-left, static). Prefer this over transform.animation for plain video/image cuts; both are honored."
+          },
+          "source_in_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "In-point within the source media file itself (distinct from in_seconds/out_seconds, which are timeline positions)."
+          },
+          "backgroundVideo": { "type": "string", "description": "Path/asset-id of a looping background video behind a text/stat/chart card." },
+          "backgroundOverlay": { "type": ["string", "number"], "description": "Scrim/overlay treatment over a background video (e.g. a color+opacity string, or a 0-1 opacity number)." },
+          "text": { "type": "string", "description": "text_card / callout / hero_title primary text." },
+          "fontSize": { "type": "number", "description": "text_card font size override." },
+          "color": { "type": "string", "description": "text_card text color (hex)." },
+          "heroSubtitle": { "type": "string", "description": "hero_title subtitle line." },
+          "stat": { "type": ["string", "number"], "description": "stat_card headline figure." },
+          "subtitle": { "type": "string", "description": "stat_card caption line." },
+          "accentColor": { "type": "string", "description": "Accent color used by stat_card/terminal_scene/screenshot_scene." },
+          "callout_type": { "type": "string", "enum": ["info", "warning", "tip", "quote"], "description": "callout styling variant." },
+          "title": { "type": "string", "description": "callout/kpi_grid/comparison heading." },
+          "leftLabel": { "type": "string", "description": "comparison left-side label." },
+          "leftValue": { "type": ["string", "number"], "description": "comparison left-side value." },
+          "rightLabel": { "type": "string", "description": "comparison right-side label." },
+          "rightValue": { "type": ["string", "number"], "description": "comparison right-side value." },
+          "chartData": {
+            "type": "array",
+            "description": "bar_chart/pie_chart/kpi_grid data points.",
+            "items": { "type": "object" }
+          },
+          "chartSeries": {
+            "type": "array",
+            "description": "line_chart multi-series data.",
+            "items": { "type": "object" }
+          },
+          "chartAnimation": { "type": "string", "description": "bar_chart/line_chart/kpi_grid entrance animation style." },
+          "showValues": { "type": "boolean", "description": "bar_chart: show numeric value labels." },
+          "showGrid": { "type": "boolean", "description": "bar_chart: show background grid lines." },
+          "xLabel": { "type": "string", "description": "line_chart x-axis label." },
+          "yLabel": { "type": "string", "description": "line_chart y-axis label." },
+          "showMarkers": { "type": "boolean", "description": "line_chart: show point markers." },
+          "donut": { "type": "boolean", "description": "pie_chart: render as a donut." },
+          "centerLabel": { "type": "string", "description": "pie_chart donut center label." },
+          "centerValue": { "type": ["string", "number"], "description": "pie_chart donut center value." },
+          "showLegend": { "type": "boolean", "description": "pie_chart: show legend." },
+          "columns": { "type": "integer", "minimum": 1, "maximum": 4, "description": "kpi_grid column count." },
+          "progress": { "type": "number", "minimum": 0, "maximum": 1, "description": "progress_bar fill ratio." },
+          "progressLabel": { "type": "string", "description": "progress_bar label." },
+          "progressColor": { "type": "string", "description": "progress_bar fill color." },
+          "progressSegments": {
+            "type": "array",
+            "description": "progress_bar: labeled segment markers along the bar (e.g. timeline markers).",
+            "items": { "type": "object" }
+          },
+          "images": {
+            "type": "array",
+            "description": "anime_scene: ordered still images.",
+            "items": { "type": "string" }
+          },
+          "particles": { "type": ["boolean", "string"], "description": "anime_scene particle effect toggle/style." },
+          "lightingFrom": { "type": "string", "description": "anime_scene lighting animation start state." },
+          "lightingTo": { "type": "string", "description": "anime_scene lighting animation end state." },
+          "vignette": { "type": ["boolean", "number"], "description": "anime_scene vignette toggle or strength." },
+          "steps": {
+            "type": "array",
+            "description": "terminal_scene: ordered cmd/out/pause/pill steps.",
+            "items": { "type": "object" }
+          },
+          "terminalTitle": { "type": "string", "description": "terminal_scene window title." },
+          "prompt": { "type": "string", "description": "terminal_scene shell prompt string." },
+          "backgroundImage": { "type": "string", "description": "screenshot_scene base screenshot image path (in public/)." },
+          "screenshotSteps": {
+            "type": "array",
+            "description": "screenshot_scene: ordered scripted overlay steps (cursor, click_pulse, type_into, etc.).",
+            "items": { "type": "object" }
+          },
+          "screenshotSize": {
+            "type": "object",
+            "description": "screenshot_scene natural pixel width/height of backgroundImage.",
+            "properties": {
+              "width": { "type": "number" },
+              "height": { "type": "number" }
+            }
+          },
+          "cursorStartAt": {
+            "description": "screenshot_scene starting cursor position (normalized 0-1 coordinates).",
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          },
           "transform": {
             "type": "object",
             "properties": {
@@ -69,26 +169,49 @@
     "overlays": {
       "type": "array",
       "items": {
-        "type": "object",
-        "required": ["asset_id", "start_seconds", "end_seconds", "position"],
-        "properties": {
-          "asset_id": { "type": "string" },
-          "start_seconds": { "type": "number", "minimum": 0 },
-          "end_seconds": { "type": "number", "minimum": 0 },
-          "position": {
+        "anyOf": [
+          {
+            "description": "Asset overlay — an image/video clip composited at a pixel region (e.g. a watermark or picture-in-picture).",
             "type": "object",
+            "required": ["asset_id", "start_seconds", "end_seconds", "position"],
             "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" },
-              "width": { "type": "number" },
-              "height": { "type": "number" }
+              "asset_id": { "type": "string" },
+              "start_seconds": { "type": "number", "minimum": 0 },
+              "end_seconds": { "type": "number", "minimum": 0 },
+              "position": {
+                "type": "object",
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "width": { "type": "number" },
+                  "height": { "type": "number" }
+                },
+                "required": ["x", "y"]
+              },
+              "animation": { "type": "string" },
+              "opacity": { "type": "number", "minimum": 0, "maximum": 1 }
             },
-            "required": ["x", "y"]
+            "additionalProperties": false
           },
-          "animation": { "type": "string" },
-          "opacity": { "type": "number", "minimum": 0, "maximum": 1 }
-        },
-        "additionalProperties": false
+          {
+            "description": "Remotion text overlay rendered by the Explainer composition's OverlayRenderer (src/Explainer.tsx) — section_title / stat_reveal / hero_title / provider_chip. Used for on-screen labels such as provenance disclosures ('AI-GENERATED RECONSTRUCTION', 'ILLUSTRATION') or archival source credits.",
+            "type": "object",
+            "required": ["type", "in_seconds", "out_seconds"],
+            "properties": {
+              "type": { "type": "string", "enum": ["section_title", "stat_reveal", "hero_title", "provider_chip"] },
+              "in_seconds": { "type": "number", "minimum": 0 },
+              "out_seconds": { "type": "number", "minimum": 0 },
+              "text": { "type": "string" },
+              "subtitle": { "type": "string" },
+              "accentColor": { "type": "string" },
+              "position": { "type": "string", "description": "e.g. top-left, bottom-right, bottom-left" },
+              "providers": { "type": "array", "items": { "type": "string" }, "description": "provider_chip only" },
+              "cycleSeconds": { "type": "number", "description": "provider_chip only" },
+              "label": { "type": "string", "description": "provider_chip only" }
+            },
+            "additionalProperties": false
+          }
+        ]
       }
     },
     "audio": {
